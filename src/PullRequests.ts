@@ -38,6 +38,7 @@ export async function pullRequestDetails(token: string) {
       pullRequest: {
         baseRef,
         headRef,
+        potentialMergeCommit,
       },
     },
   } = await client.graphql<PullRequestDetailsResponse>(
@@ -57,6 +58,10 @@ export async function pullRequestDetails(token: string) {
                 oid
               }
             }
+            potentialMergeCommit {
+              abbreviatedOid
+              oid
+            }
           }
         }
       }
@@ -72,5 +77,6 @@ export async function pullRequestDetails(token: string) {
     base_sha: baseRef.target.oid,
     head_ref: headRef.name,
     head_sha: headRef.target.oid,
+    merge_sha: potentialMergeCommit.oid,
   };
 }
