@@ -1,4 +1,4 @@
-import { context, getOctokit } from "@actions/github";
+import {context, getOctokit} from "@actions/github";
 
 interface PullRequestDetailsResponse {
   repository: {
@@ -15,6 +15,9 @@ interface PullRequestDetailsResponse {
           oid: string;
         };
       };
+      potentialMergeCommit: {
+        oid: string;
+      }
     };
   };
 }
@@ -22,7 +25,7 @@ interface PullRequestDetailsResponse {
 export async function isPullRequest(token: string) {
   const client = getOctokit(token);
 
-  const { data: { pull_request } } = await client.rest.issues.get({
+  const {data: {pull_request}} = await client.rest.issues.get({
     ...context.repo,
     issue_number: context.issue.number,
   });
@@ -38,6 +41,7 @@ export async function pullRequestDetails(token: string) {
       pullRequest: {
         baseRef,
         headRef,
+        potentialMergeCommit,
       },
     },
   } = await client.graphql<PullRequestDetailsResponse>(
@@ -57,6 +61,9 @@ export async function pullRequestDetails(token: string) {
                 oid
               }
             }
+            potentialMergeCommit {
+              oid
+            }
           }
         }
       }
@@ -72,5 +79,6 @@ export async function pullRequestDetails(token: string) {
     base_sha: baseRef.target.oid,
     head_ref: headRef.name,
     head_sha: headRef.target.oid,
+    merge_sha: potentialMergeCommit.oid,
   };
 }
